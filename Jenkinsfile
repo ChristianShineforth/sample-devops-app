@@ -106,10 +106,10 @@ YAML
             export KUBECONFIG=$KUBECONFIG_FILE
             # Example: port-forward API and hit /health
             kubectl -n $NAMESPACE port-forward svc/api 13000:3000 >/tmp/pf.log 2>&1 &
-            PF_PID=$!
+            PF_PID=\$!
             sleep 2
             curl -fsS http://127.0.0.1:13000/health
-            kill $PF_PID
+            kill \$PF_PID
           """
         }
       }
