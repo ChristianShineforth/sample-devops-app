@@ -1,6 +1,11 @@
 pipeline {
   agent any
 
+  triggers {
+    // Trigger build when GitHub webhook receives push event
+    githubPush()
+  }
+
   environment {
     REGISTRY = "docker.io/chriskolb00"
     APP = "myapp"
