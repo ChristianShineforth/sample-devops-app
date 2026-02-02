@@ -134,42 +134,21 @@ pipeline {
               sh """
                 export KUBECONFIG=\$KUBECONFIG_FILE
 
-                kubectl apply -f k8s/base/namespace.yaml
+                # Apply namespace and basic resources
+                kubectl apply -f k8s/dev.yaml
 
-                # Render kustomize overlay with correct tags
-                sed -i.bak 's|REGISTRY|\$REGISTRY|g; s|TAG|\$TAG|g' k8s/overlays/dev/kustomization.yaml
+                # Update image tags to newly built versions
+                kubectl set image deployment/api api=$REGISTRY/$APP-api:$TAG -n $NAMESPACE
+                kubectl set image deployment/worker worker=$REGISTRY/$APP-worker:$TAG -n $NAMESPACE
+                kubectl set image deployment/frontend frontend=$REGISTRY/$APP-frontend:$TAG -n $NAMESPACE
 
-                kubectl apply -k k8s/overlays/dev
-
-                # Run migrations as a one-off job (example)
-                kubectl -n \$NAMESPACE delete job db-migrate --ignore-not-found=true
-                kubectl -n \$NAMESPACE apply -f - <<'YAML'
-apiVersion: batch/v1
-kind: Job
-metadata:
-  name: db-migrate
-spec:
-  backoffLimit: 1
-  template:
-    spec:
-      restartPolicy: Never
-      containers:
-        - name: migrate
-          image: \$REGISTRY/\$APP-api:\$TAG
-          command: ["node","dist/migrate.js"]
-          env:
-            - name: DATABASE_URL
-              valueFrom:
-                secretKeyRef: { name: myapp-secrets, key: databaseUrl }
-YAML
-
-                kubectl -n \$NAMESPACE wait --for=condition=complete job/db-migrate --timeout=180s
-
-                kubectl -n \$NAMESPACE rollout status deploy/api --timeout=180s
-                kubectl -n \$NAMESPACE rollout status deploy/worker --timeout=180s
-                kubectl -n \$NAMESPACE rollout status deploy/frontend --timeout=180s
+                # Wait for rollout to complete
+                kubectl rollout status deployment/api -n $NAMESPACE --timeout=180s
+                kubectl rollout status deployment/worker -n $NAMESPACE --timeout=180s
+                kubectl rollout status deployment/frontend -n $NAMESPACE --timeout=180s
               """
             }
+            echo "✅ Deployed to Kubernetes successfully!"
           } else {
             echo "⚠️  Kubeconfig credentials not found - skipping Kubernetes deployment"
             echo "💡 Add 'kubeconfig-mycluster' credentials in Jenkins to enable deployments"
