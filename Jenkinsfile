@@ -2,8 +2,8 @@ pipeline {
   agent any
 
   triggers {
-    // Trigger build when GitHub webhook receives push event
-    githubPush()
+    // Poll GitHub every 2 minutes for changes
+    pollSCM('H/2 * * * *')
   }
 
   environment {
