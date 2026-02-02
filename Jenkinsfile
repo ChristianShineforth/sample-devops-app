@@ -61,6 +61,18 @@ pipeline {
             return
           }
           
+          // Test Docker socket access
+          def dockerWorks = sh(script: 'docker ps >/dev/null 2>&1', returnStatus: true) == 0
+          
+          if (!dockerWorks) {
+            echo "⚠️  Docker found but cannot access Docker daemon - permission denied"
+            echo "💡 Fix: Add Jenkins user to docker group:"
+            echo "   sudo usermod -aG docker jenkins"
+            echo "   or: sudo chmod 666 /var/run/docker.sock"
+            echo "   Then restart Jenkins"
+            return
+          }
+          
           // Check if Docker registry credentials exist
           def credsExist = false
           try {
