@@ -1,0 +1,13 @@
+resources:
+  - ../../base
+
+images:
+  - name: REGISTRY/myapp-api
+    newName: REGISTRY/myapp-api
+    newTag: TAG
+  - name: REGISTRY/myapp-worker
+    newName: REGISTRY/myapp-worker
+    newTag: TAG
+  - name: REGISTRY/myapp-frontend
+    newName: REGISTRY/myapp-frontend
+    newTag: TAG

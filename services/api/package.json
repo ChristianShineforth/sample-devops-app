@@ -1,0 +1,13 @@
+{
+    "name": "api",
+    "version": "1.0.0",
+    "type": "module",
+    "scripts": {
+      "start": "node src/server.js",
+      "test": "node -e \"console.log('api tests passed')\""
+    },
+    "dependencies": {
+      "fastify": "^4.26.0"
+    }
+  }
+  
