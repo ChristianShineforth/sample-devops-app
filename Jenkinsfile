@@ -51,6 +51,16 @@ pipeline {
     stage("Build & Push Images") {
       steps {
         script {
+          // Check if docker is available
+          def dockerAvailable = sh(script: 'command -v docker', returnStatus: true) == 0
+          
+          if (!dockerAvailable) {
+            echo "⚠️  Docker not found in Jenkins agent - skipping image build"
+            echo "💡 To build images, ensure Docker is available in your Jenkins container"
+            echo "   You can mount the Docker socket: -v /var/run/docker.sock:/var/run/docker.sock"
+            return
+          }
+          
           // Check if Docker registry credentials exist
           def credsExist = false
           try {
@@ -75,6 +85,7 @@ pipeline {
                 docker push $REGISTRY/$APP-frontend:$TAG
               """
             }
+            echo "✅ Images built and pushed to registry"
           } else {
             echo "⚠️  Docker registry credentials not found - building locally only"
             sh """
